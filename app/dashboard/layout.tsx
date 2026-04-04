@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "About Me", href: "/dashboard/about", icon: Info },
     { name: "My Projects", href: "/dashboard/projects", icon: FolderKanban },
     { name: "Skills & Tools", href: "/dashboard/skills", icon: Wrench },
-    { name: "Certificates", href: "/dashboard/certificates", icon: Award }, // 👈 الرابط الجديد هنا
+    { name: "Certificates", href: "/dashboard/certificates", icon: Award }, 
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   ]
 

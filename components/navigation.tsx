@@ -36,6 +36,7 @@ export default function Navigation() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/projects", label: "Projects" },
+    { href: "/certificates", label: "Certificates" }, // السطر الجديد
     { href: "/skills", label: "Skills" },
     { href: "/contact", label: "Contact" },
   ];
