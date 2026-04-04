@@ -11,28 +11,30 @@ import {
   ArrowLeft,
   Cpu,
   Type,
-  Image as ImageIcon // 👈 ضفنا أيقونة الصورة هنا
+  Image as ImageIcon,
+  AlertCircle, 
+  X 
 } from "lucide-react"
+import ImageUploader from "@/components/ImageUploader" 
 
 export default function AboutDashboard() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // 1. حالة البيانات (ضفنا فيها aboutImage)
   const [formData, setFormData] = useState({
     pageTitle: "",
     pageSubtitle: "",
     missionTitle: "",
     missionDescription: "",
-    aboutImage: "" // 👈 حقل الصورة الجديد
+    aboutImage: "" 
   })
 
-  // 2. جلب بيانات About
   const fetchAboutData = async () => {
     try {
-      // 👈 وحدنا اللينك هنا عشان يكلم نفس الباك إند
       const res = await fetch("https://portfolioapi-flame.vercel.app/about", { cache: "no-store" }) 
       const result = await res.json()
       
@@ -42,7 +44,7 @@ export default function AboutDashboard() {
           pageSubtitle: result.data.pageSubtitle || "Engineering high-performance solutions...",
           missionTitle: result.data.missionTitle || "Technical Vision",
           missionDescription: result.data.missionDescription || "I am a Full-Stack Developer...",
-          aboutImage: result.data.aboutImage || "" // 👈 جلب الصورة لو موجودة
+          aboutImage: result.data.aboutImage || "" 
         })
       }
     } catch (error) {
@@ -54,10 +56,14 @@ export default function AboutDashboard() {
 
   useEffect(() => { fetchAboutData() }, [])
 
-  // 3. تحديث بيانات About
+  const handleImageUploaded = (url: string) => {
+    setFormData(prev => ({ ...prev, aboutImage: url }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setErrorMsg(null) 
     const token = localStorage.getItem("token")
 
     try {
@@ -75,10 +81,11 @@ export default function AboutDashboard() {
         setTimeout(() => setShowSuccess(false), 3000)
       } else {
          const errorData = await res.json()
-         alert(`Error: ${errorData.message || "Failed to update"}`)
+         setErrorMsg(errorData.message || "Failed to update content. Please try again.")
       }
     } catch (error) {
       console.error("Update error:", error)
+      setErrorMsg("Connection error. Please check your internet or server.")
     } finally {
       setIsSubmitting(false)
     }
@@ -91,9 +98,44 @@ export default function AboutDashboard() {
   )
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
+    <div className="p-8 max-w-4xl mx-auto space-y-8 relative">
       
-      {/* 🔙 زرار الرجوع */}
+      <AnimatePresence>
+        {errorMsg && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setErrorMsg(null)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#161B22] border border-[#30363D] rounded-2xl p-6 z-[101] shadow-2xl flex flex-col items-center text-center gap-4"
+            >
+              <button 
+                onClick={() => setErrorMsg(null)}
+                className="absolute top-4 right-4 text-[#6B7280] hover:text-white transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 mt-2">
+                <AlertCircle size={32} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-white">Oops! Error</h3>
+                <p className="text-[#9CA3AF] text-sm leading-relaxed">{errorMsg}</p>
+              </div>
+              <button 
+                onClick={() => setErrorMsg(null)}
+                className="w-full mt-2 py-3 bg-[#30363D] text-white font-semibold rounded-xl hover:bg-[#3b424b] transition-all"
+              >
+                Close
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <motion.button
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -104,7 +146,6 @@ export default function AboutDashboard() {
         <span className="font-medium text-sm italic">Back to Dashboard</span>
       </motion.button>
 
-      {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
@@ -127,7 +168,6 @@ export default function AboutDashboard() {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        {/* Left Column: Hero Section Content */}
         <div className="space-y-6">
           <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-4 shadow-lg">
             <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider">
@@ -157,24 +197,28 @@ export default function AboutDashboard() {
               />
             </div>
 
-            {/* 👈 ضفنا حقل الصورة هنا */}
-            <div className="space-y-1 pt-2">
-              <label className="text-xs text-[#9CA3AF]">About Page Image URL (Optional)</label>
-              <div className="relative">
-                <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" size={16} />
-                <input 
-                  value={formData.aboutImage}
-                  onChange={e => setFormData({...formData, aboutImage: e.target.value})}
-                  placeholder="https://example.com/image.png"
-                  className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl pl-10 pr-4 py-3 text-white focus:border-[#00BFFF] outline-none"
-                />
-              </div>
-              <p className="text-[10px] text-[#6B7280] mt-1 pl-1">Leave empty to use your default profile avatar.</p>
+            <div className="space-y-2 pt-2">
+              <label className="text-xs text-[#9CA3AF] flex items-center gap-2">
+                <ImageIcon size={14} /> About Page Image
+              </label>
+              
+              {formData.aboutImage && (
+                <div className="mb-2 relative w-full h-32 rounded-xl overflow-hidden border border-[#30363D]">
+                  <img src={formData.aboutImage} alt="Current About" className="w-full h-full object-cover opacity-60" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[10px] bg-black/50 px-2 py-1 rounded text-white">Current Active Image</span>
+                  </div>
+                </div>
+              )}
+
+              <ImageUploader onUploadSuccess={handleImageUploaded} />
+              <p className="text-[10px] text-[#6B7280] mt-1 pl-1 italic">
+                Current URL: {formData.aboutImage || "No image set"}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Mission Content */}
         <div className="space-y-6">
           <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-4 shadow-lg">
             <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider">

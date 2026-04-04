@@ -16,21 +16,25 @@ import {
   ArrowLeft,
   Link as LinkIcon,
   Download,
-  BarChart3 // ضفنا أيقونة للـ Stats
+  BarChart3,
+  AlertCircle,
+  Hexagon 
 } from "lucide-react"
+import ImageUploader from "@/components/ImageUploader"
 
 export default function ProfilePage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // 1. حالة البيانات
   const [formData, setFormData] = useState({
     fullName: "",
     jobTitle: "",
     bio: "",
     avatar: "",
+    logo: "", 
     github: "",
     linkedin: "",
     cvLink: "",
@@ -39,7 +43,6 @@ export default function ProfilePage() {
     skillsCount: ""
   })
 
-  // 2. جلب البيانات من الباك إند
   const fetchProfileData = async () => {
     try {
       const res = await fetch("https://portfolioapi-flame.vercel.app/profile")
@@ -52,6 +55,7 @@ export default function ProfilePage() {
           jobTitle: profileData.jobTitle || "",
           bio: profileData.bio || "",
           avatar: profileData.avatar || "",
+          logo: profileData.logo || "", 
           github: profileData.github || "",
           linkedin: profileData.linkedin || "",
           cvLink: profileData.cvLink || "",
@@ -69,10 +73,18 @@ export default function ProfilePage() {
 
   useEffect(() => { fetchProfileData() }, [])
 
-  // 3. تحديث البيانات (PUT Request)
+  const handleAvatarUploaded = (url: string) => {
+    setFormData(prev => ({ ...prev, avatar: url }))
+  }
+
+  const handleLogoUploaded = (url: string) => {
+    setFormData(prev => ({ ...prev, logo: url }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setErrorMsg(null)
     const token = localStorage.getItem("token")
 
     try {
@@ -90,10 +102,11 @@ export default function ProfilePage() {
         setTimeout(() => setShowSuccess(false), 3000)
       } else {
         const result = await res.json()
-        alert(`Error: ${result.message || "Failed to update profile"}`)
+        setErrorMsg(result.message || "Failed to update profile")
       }
     } catch (error) {
       console.error("Update error:", error)
+      setErrorMsg("Connection error. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -108,7 +121,6 @@ export default function ProfilePage() {
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-8">
       
-      {/* 🔙 زرار الرجوع */}
       <motion.button
         initial={{ opacity: 0, x: -10 }}
         animate={{ opacity: 1, x: 0 }}
@@ -120,35 +132,50 @@ export default function ProfilePage() {
       </motion.button>
 
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center relative">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
             <User className="text-[#00BFFF]" /> Profile Settings
           </h1>
-          <p className="text-[#9CA3AF]">Update your personal details, bio, stats, and social links.</p>
+          <p className="text-[#9CA3AF]">Update your personal details, bio, brand logo, and social links.</p>
         </div>
         
-        <AnimatePresence>
-          {showSuccess && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-              className="bg-green-500/10 text-green-500 px-4 py-2 rounded-xl border border-green-500/20 flex items-center gap-2"
-            >
-              <CheckCircle2 size={18} /> Profile Saved
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className="absolute right-0 top-0 flex flex-col gap-2 z-50">
+          <AnimatePresence>
+            {showSuccess && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                className="bg-green-500/10 text-green-500 px-4 py-2 rounded-xl border border-green-500/20 flex items-center gap-2"
+              >
+                <CheckCircle2 size={18} /> Profile Saved
+              </motion.div>
+            )}
+            {errorMsg && (
+              <motion.div 
+                initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                className="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl border border-red-500/20 flex items-center gap-2"
+              >
+                <AlertCircle size={18} /> {errorMsg}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        {/* Left Column: Preview & Social Links */}
         <div className="space-y-6">
           {/* Card Preview */}
           <div className="bg-[#161B22] border border-[#30363D] p-8 rounded-3xl text-center space-y-4 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00BFFF] to-[#3B82F6]" />
             
-            <div className="relative w-40 h-40 mx-auto">
+            {formData.logo && (
+              <div className="absolute top-4 left-4 w-12 h-12 bg-[#0D1117] border border-[#30363D] rounded-lg p-1.5 shadow-lg">
+                <img src={formData.logo} alt="Brand Logo" className="w-full h-full object-contain" />
+              </div>
+            )}
+            
+            <div className="relative w-40 h-40 mx-auto mt-4">
               <div className="absolute inset-0 bg-[#00BFFF]/20 rounded-full blur-xl" />
               <div className="relative w-full h-full rounded-full overflow-hidden border-4 border-[#161B22] shadow-[0_0_0_2px_#30363D]">
                 <img 
@@ -164,23 +191,34 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Social Links & Media */}
-          <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-4 shadow-lg">
-            <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider">
-              <LinkIcon size={16} /> Links & Media
+          <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-6 shadow-lg">
+            <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider border-b border-[#30363D]/50 pb-2">
+              <Camera size={16} /> Brand & Media
             </div>
             
-            <div className="space-y-1">
-              <label className="text-xs text-[#9CA3AF]">Avatar URL</label>
-              <div className="relative">
-                <Camera className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" size={16} />
-                <input 
-                  value={formData.avatar}
-                  onChange={e => setFormData({...formData, avatar: e.target.value})}
-                  placeholder="https://example.com/avatar.png"
-                  className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl pl-10 pr-4 py-2.5 text-white text-sm focus:border-[#00BFFF] outline-none transition-all"
-                />
-              </div>
+            <div className="space-y-2">
+              <label className="text-xs text-[#9CA3AF] flex items-center gap-2">
+                <User size={14} /> Profile Avatar Image
+              </label>
+              <ImageUploader onUploadSuccess={handleAvatarUploaded} />
+            </div>
+
+            <div className="space-y-2 pt-4 border-t border-[#30363D]/50">
+              <label className="text-xs text-[#9CA3AF] flex items-center gap-2">
+                <Hexagon size={14} /> Brand Logo (Navbar/Footer)
+              </label>
+              <ImageUploader onUploadSuccess={handleLogoUploaded} />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Links, Basic Details & Stats */}
+        <div className="space-y-6">
+          
+          {/* Social Links */}
+          <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-4 shadow-lg">
+            <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider">
+              <LinkIcon size={16} /> Social Links & Resume
             </div>
 
             <div className="space-y-1">
@@ -222,10 +260,8 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Right Column: Basic Details & Bio & Stats */}
-        <div className="space-y-6">
+          {/* General Information */}
           <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-4 shadow-lg">
             <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider">
               <FileText size={16} /> General Information
@@ -262,7 +298,7 @@ export default function ProfilePage() {
             <div className="space-y-1">
               <label className="text-xs text-[#9CA3AF]">Short Bio (Appears in Header/Footer)</label>
               <textarea 
-                rows={5}
+                rows={4}
                 value={formData.bio}
                 onChange={e => setFormData({...formData, bio: e.target.value})}
                 placeholder="A brief introduction about yourself..."
@@ -274,7 +310,7 @@ export default function ProfilePage() {
           {/* Quick Stats Edit */}
           <div className="bg-[#161B22] border border-[#30363D] p-6 rounded-2xl space-y-4 shadow-lg">
             <div className="flex items-center gap-2 text-[#00BFFF] mb-2 font-bold text-xs uppercase tracking-wider">
-              <BarChart3 size={16} /> Quick Stats (Home Page)
+              <BarChart3 size={16} /> Quick Stats
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

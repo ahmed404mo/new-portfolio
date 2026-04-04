@@ -15,6 +15,7 @@ import {
   Save,
   AlertTriangle
 } from "lucide-react"
+import ImageUploader from "@/components/ImageUploader" 
 
 interface Project {
   _id: string;
@@ -44,7 +45,6 @@ export default function ProjectsPage() {
     liveLink: ""
   })
 
-  // 1. جلب المشاريع
   const fetchProjects = async () => {
     try {
       const res = await fetch("https://portfolioapi-flame.vercel.app/project")
@@ -59,7 +59,10 @@ export default function ProjectsPage() {
 
   useEffect(() => { fetchProjects() }, [])
 
-  // 2. التعامل مع الفورم
+  const handleImageUploaded = (url: string) => {
+    setFormData(prev => ({ ...prev, image: url }))
+  }
+
   const handleOpenModal = (project?: Project) => {
     if (project) {
       setEditingProject(project)
@@ -80,6 +83,12 @@ export default function ProjectsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.image) {
+      alert("Please upload a project image first.");
+      return;
+    }
+
     setIsSubmitting(true)
     const token = localStorage.getItem("token")
     
@@ -113,7 +122,6 @@ export default function ProjectsPage() {
     }
   }
 
-  // 3. الحذف
   const confirmDelete = async () => {
     if (!selectedProjectId) return
     const token = localStorage.getItem("token")
@@ -159,10 +167,10 @@ export default function ProjectsPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-[#161B22] border border-[#30363D] rounded-2xl overflow-hidden group hover:border-[#00BFFF]/50 transition-all shadow-xl"
+              className="bg-[#161B22] border border-[#30363D] rounded-2xl overflow-hidden group hover:border-[#00BFFF]/50 transition-all shadow-xl flex flex-col"
             >
               {/* Project Image */}
-              <div className="relative h-48 bg-[#0D1117] overflow-hidden">
+              <div className="relative h-48 bg-[#0D1117] overflow-hidden flex-shrink-0">
                 <img src={project.image} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                   <button onClick={() => handleOpenModal(project)} className="p-2 bg-white/10 backdrop-blur-md rounded-lg text-white hover:bg-[#00BFFF] transition-all"><Pencil size={20} /></button>
@@ -171,15 +179,15 @@ export default function ProjectsPage() {
               </div>
 
               {/* Project Info */}
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 flex-grow flex flex-col">
                 <h3 className="text-xl font-bold text-white">{project.title}</h3>
-                <p className="text-[#9CA3AF] text-sm line-clamp-2">{project.description}</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="text-[#9CA3AF] text-sm line-clamp-2 flex-grow">{project.description}</p>
+                <div className="flex flex-wrap gap-2 mt-auto">
                   {project.techStack.map(tech => (
                     <span key={tech} className="px-3 py-1 bg-[#0D1117] border border-[#30363D] text-[#00BFFF] text-xs rounded-full">{tech}</span>
                   ))}
                 </div>
-                <div className="flex gap-4 pt-2">
+                <div className="flex gap-4 pt-4 border-t border-[#30363D]/50">
                   {project.githubLink && <a href={project.githubLink} target="_blank" className="text-[#6B7280] hover:text-white transition-colors"><Github size={20} /></a>}
                   {project.liveLink && <a href={project.liveLink} target="_blank" className="text-[#6B7280] hover:text-white transition-colors"><ExternalLink size={20} /></a>}
                 </div>
@@ -196,38 +204,76 @@ export default function ProjectsPage() {
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="relative w-full max-w-2xl bg-[#161B22] border border-[#30363D] rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-              <h2 className="text-2xl font-bold text-white mb-6">{editingProject ? "Edit Project" : "Add New Project"}</h2>
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="relative w-full max-w-3xl bg-[#161B22] border border-[#30363D] rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh] hide-scrollbar">
+              
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-6 right-6 text-[#6B7280] hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+
+              <h2 className="text-2xl font-bold text-white mb-6 border-b border-[#30363D] pb-4">
+                {editingProject ? "Edit Project" : "Add New Project"}
+              </h2>
+              
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm text-[#9CA3AF] flex items-center gap-2">
+                    <ImageIcon size={16} /> Project Cover Image
+                  </label>
+                  
+                  <div className="flex flex-col sm:flex-row gap-6 items-start bg-[#0D1117] p-4 rounded-xl border border-[#30363D]">
+                    {formData.image && (
+                      <div className="w-full sm:w-1/3 flex-shrink-0">
+                        <div className="relative aspect-video rounded-lg overflow-hidden border border-[#30363D]">
+                          <img src={formData.image} alt="Cover" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="text-xs text-white bg-[#00BFFF] px-2 py-1 rounded">Current Image</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="w-full">
+                      <ImageUploader onUploadSuccess={handleImageUploaded} />
+                      {formData.image && (
+                        <p className="text-[10px] text-[#6B7280] mt-2 font-mono truncate">
+                          URL: {formData.image}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm text-[#9CA3AF]">Project Title</label>
                   <input value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" required />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm text-[#9CA3AF]">Image URL</label>
-                  <input value={formData.image} onChange={e => setFormData({...formData, image: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" required />
-                </div>
-                <div className="space-y-2 md:col-span-2">
                   <label className="text-sm text-[#9CA3AF]">Tech Stack (comma separated)</label>
                   <input value={formData.techStack} onChange={e => setFormData({...formData, techStack: e.target.value})} placeholder="React, Node.js, Tailwind..." className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" required />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-[#9CA3AF]">GitHub Link</label>
-                  <input value={formData.githubLink} onChange={e => setFormData({...formData, githubLink: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-[#9CA3AF]">Live Demo Link</label>
-                  <input value={formData.liveLink} onChange={e => setFormData({...formData, liveLink: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" />
-                </div>
+                
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-sm text-[#9CA3AF]">Description</label>
                   <textarea value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={3} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none resize-none" required />
                 </div>
-                <div className="md:col-span-2 flex justify-end gap-4 mt-4">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-white hover:bg-white/5 rounded-xl transition-all">Cancel</button>
-                  <button disabled={isSubmitting} className="px-8 py-3 bg-[#00BFFF] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#00BFFF]/30 flex items-center gap-2">
+
+                <div className="space-y-2">
+                  <label className="text-sm text-[#9CA3AF]">GitHub Link (Optional)</label>
+                  <input value={formData.githubLink} onChange={e => setFormData({...formData, githubLink: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm text-[#9CA3AF]">Live Demo Link (Optional)</label>
+                  <input value={formData.liveLink} onChange={e => setFormData({...formData, liveLink: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" />
+                </div>
+                
+                <div className="md:col-span-2 flex justify-end gap-4 mt-6 pt-6 border-t border-[#30363D]">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-3 text-[#9CA3AF] hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">Cancel</button>
+                  <button disabled={isSubmitting || !formData.image} className="px-8 py-3 bg-[#00BFFF] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#00BFFF]/30 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                    {editingProject ? "Update" : "Create"}
+                    {editingProject ? "Update Project" : "Create Project"}
                   </button>
                 </div>
               </form>

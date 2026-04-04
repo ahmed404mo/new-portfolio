@@ -22,7 +22,6 @@ export default function Home() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // جلب البيانات من الباك اند
   useEffect(() => {
     const fetchProfile = async () => {
       try {

@@ -10,26 +10,28 @@ import {
   Code2, 
   Save,
   AlertTriangle,
-  X
+  X,
+  Image as ImageIcon
 } from "lucide-react"
+import ImageUploader from "@/components/ImageUploader"
 
-// 1. تعريف واجهة البيانات
 interface Skill {
   _id: string;
   name: string;
   icon: string;
   level: number;
-  category: string; 
+  category?: string; 
 }
 
 export default function SkillsDashboard() {
   const [skills, setSkills] = useState<Skill[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null) // للتحكم في بوب آب الحذف
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // شيلنا اختيار الـ Category من الفورم، وهنثبته على technical برمجياً
   const [formData, setFormData] = useState({
     name: "",
     icon: "",
@@ -37,7 +39,6 @@ export default function SkillsDashboard() {
     category: "technical" 
   })
 
-  // جلب البيانات
   const fetchSkills = async () => {
     try {
       const res = await fetch("https://portfolioapi-flame.vercel.app/skills")
@@ -53,9 +54,17 @@ export default function SkillsDashboard() {
 
   useEffect(() => { fetchSkills() }, [])
 
-  // إضافة مهارة
+  const handleIconUploaded = (url: string) => {
+    setFormData(prev => ({ ...prev, icon: url }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.icon) {
+      return; 
+    }
+
     setIsSubmitting(true)
     const token = localStorage.getItem("token")
 
@@ -81,7 +90,6 @@ export default function SkillsDashboard() {
     }
   }
 
-  // تنفيذ الحذف النهائي
   const handleConfirmDelete = async () => {
     if (!deleteConfirm) return
     setIsDeleting(deleteConfirm)
@@ -110,15 +118,15 @@ export default function SkillsDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-            <Wrench className="text-[#00BFFF]" /> Skills Management
+            <Wrench className="text-[#00BFFF]" /> Tech Stack
           </h1>
-          <p className="text-[#9CA3AF]">Organize your tech stack and educational expertise.</p>
+          <p className="text-[#9CA3AF]">Manage and showcase your technical skills and expertise.</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-[#00BFFF] text-white font-bold rounded-xl hover:shadow-lg transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-[#00BFFF] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#00BFFF]/20 transition-all"
         >
-          <Plus size={20} /> Add New Skill
+          <Plus size={20} /> Add Skill
         </button>
       </div>
 
@@ -132,7 +140,7 @@ export default function SkillsDashboard() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#161B22] border border-[#30363D] p-5 rounded-2xl flex items-center justify-between group hover:border-[#00BFFF]/40 transition-all"
+              className="bg-[#161B22] border border-[#30363D] p-5 rounded-2xl flex items-center justify-between group hover:border-[#00BFFF]/40 transition-all shadow-md"
             >
               <div className="flex items-center gap-4 flex-1">
                 <div className="w-12 h-12 bg-[#0D1117] rounded-xl flex items-center justify-center border border-[#30363D] overflow-hidden p-2">
@@ -144,15 +152,10 @@ export default function SkillsDashboard() {
                 </div>
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-bold text-white">{skill.name}</h3>
-                      <span className="text-[10px] uppercase tracking-widest text-[#9CA3AF] bg-[#0D1117] px-2 py-0.5 rounded border border-[#30363D]">
-                        {skill.category === "technical" ? "Technical" : "Educational"}
-                      </span>
-                    </div>
+                    <h3 className="font-bold text-white">{skill.name}</h3>
                     <span className="text-xs text-[#00BFFF] font-mono">{skill.level}%</span>
                   </div>
-                  <div className="w-full bg-[#0D1117] h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#0D1117] h-1.5 rounded-full overflow-hidden border border-[#30363D]/50">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: `${skill.level}%` }}
@@ -163,7 +166,7 @@ export default function SkillsDashboard() {
               </div>
               <button 
                 onClick={() => setDeleteConfirm(skill._id)} 
-                className="ml-4 p-2 text-[#6B7280] hover:text-red-500 transition-colors"
+                className="ml-4 p-2 text-[#6B7280] hover:text-red-500 transition-colors bg-[#0D1117] rounded-lg border border-[#30363D] hover:border-red-500/50"
               >
                 <Trash2 size={18} />
               </button>
@@ -189,7 +192,7 @@ export default function SkillsDashboard() {
                 <AlertTriangle size={32} />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Are you sure?</h3>
-              <p className="text-[#9CA3AF] mb-8 text-sm">This action cannot be undone. This skill will be permanently removed from your portfolio.</p>
+              <p className="text-[#9CA3AF] mb-8 text-sm">This action cannot be undone. This skill will be permanently removed from your tech stack.</p>
               
               <div className="flex gap-3">
                 <button 
@@ -201,7 +204,7 @@ export default function SkillsDashboard() {
                 <button 
                   onClick={handleConfirmDelete}
                   disabled={!!isDeleting}
-                  className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold flex items-center justify-center gap-2"
+                  className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all font-bold flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {isDeleting ? <Loader2 className="animate-spin" size={18} /> : "Yes, Delete"}
                 </button>
@@ -211,42 +214,51 @@ export default function SkillsDashboard() {
         )}
       </AnimatePresence>
 
-      {/* Add Skill Modal */}
+      {/* ➕ Add Skill Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="relative w-full max-w-md bg-[#161B22] border border-[#30363D] rounded-3xl p-8 shadow-2xl">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} className="relative w-full max-w-md bg-[#161B22] border border-[#30363D] rounded-3xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                  <Code2 className="text-[#00BFFF]" /> New Skill
+                  <Code2 className="text-[#00BFFF]" /> New Tech Skill
                 </h2>
                 <button onClick={() => setIsModalOpen(false)} className="text-[#6B7280] hover:text-white"><X size={24} /></button>
               </div>
+              
               <form onSubmit={handleSubmit} className="space-y-5">
+                
+                <div className="space-y-2">
+                  <label className="text-sm text-[#9CA3AF] flex items-center gap-2">
+                    <ImageIcon size={14} /> Skill Icon (PNG, SVG, WebP)
+                  </label>
+                  <ImageUploader onUploadSuccess={handleIconUploaded} />
+                  {formData.icon && (
+                    <p className="text-[10px] text-[#00BFFF] mt-1 font-mono truncate">
+                      Ready: {formData.icon}
+                    </p>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm text-[#9CA3AF]">Skill Name</label>
-                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Next.js" className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" />
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Next.js, TypeScript, Docker" className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none transition-all" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-[#9CA3AF]">Category</label>
-                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white outline-none focus:border-[#00BFFF]">
-                    <option value="technical">Technical Skills (Work)</option>
-                    <option value="educational">Educational Mastery (College)</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-[#9CA3AF]">Icon URL</label>
-                  <input required value={formData.icon} onChange={e => setFormData({...formData, icon: e.target.value})} placeholder="https://cdn.icon.png" className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white focus:border-[#00BFFF] outline-none" />
-                </div>
-                <div className="space-y-2">
+                
+                
+                <div className="space-y-2 pt-2">
                   <div className="flex justify-between text-sm text-[#9CA3AF]">
-                    <label>Level</label>
-                    <span>{formData.level}%</span>
+                    <label>Proficiency Level</label>
+                    <span className="text-[#00BFFF] font-bold">{formData.level}%</span>
                   </div>
-                  <input type="range" min="0" max="100" value={formData.level} onChange={e => setFormData({...formData, level: parseInt(e.target.value)})} className="w-full accent-[#00BFFF] h-2 bg-[#0D1117] rounded-lg appearance-none cursor-pointer" />
+                  <input type="range" min="0" max="100" value={formData.level} onChange={e => setFormData({...formData, level: parseInt(e.target.value)})} className="w-full accent-[#00BFFF] h-2 bg-[#0D1117] rounded-lg appearance-none cursor-pointer border border-[#30363D]" />
                 </div>
-                <button disabled={isSubmitting} className="w-full py-4 bg-[#00BFFF] text-white font-bold rounded-xl hover:shadow-lg flex items-center justify-center gap-2 mt-4">
+                
+                <button 
+                  disabled={isSubmitting || !formData.icon} 
+                  className="w-full py-4 bg-[#00BFFF] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#00BFFF]/30 flex items-center justify-center gap-2 mt-6 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
                   {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
                   Save Skill
                 </button>

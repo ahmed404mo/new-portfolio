@@ -11,7 +11,7 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredPath, setHoveredPath] = useState<string | null>(null); 
   const pathname = usePathname();
-  const [profile, setProfile] = useState({ name: "Ahmed", avatar: "/portTwo.png" });
+  const [profile, setProfile] = useState({ name: "Ahmed", logo: "/portTwo.png" });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -22,7 +22,7 @@ export default function Navigation() {
           const data = result.data.profile || result.data;
           setProfile({
             name: data.fullName ? data.fullName.split(' ')[0] : "Ahmed",
-            avatar: data.avatar || "/portTwo.png"
+            logo: data.logo || data.avatar || "/portTwo.png" 
           });
         }
       } catch (error) {
@@ -46,14 +46,16 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo & Name */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="relative w-10 h-10 bg-gradient-to-br from-[#00BFFF] to-[#3B82F6] rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-[#00BFFF]/50 transition-shadow overflow-hidden">
-              <Image
-                alt="Logo"
-                src={profile.avatar}
-                width={40}
-                height={40}
-                className="rounded-lg object-cover"
-              />
+            <div className="relative w-10 h-10 rounded-lg flex items-center justify-center shadow-lg group-hover:shadow-[#00BFFF]/50 transition-shadow overflow-hidden p-0.5">
+              <div className="w-full h-full bg-[#0D1117] rounded-md overflow-hidden relative">
+                <Image
+                  alt="Brand Logo"
+                  src={profile.logo}
+                  fill
+                  className="object-cover"
+                  sizes="40px"
+                />
+              </div>
             </div>
             <span className="font-bold text-lg text-white">{profile.name}</span> 
           </Link>
