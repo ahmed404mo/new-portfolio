@@ -1,93 +1,119 @@
-import { Mail, Linkedin, Github, Facebook } from "lucide-react"
-import Link from "next/link"
+import Link from "next/link";
+import { Facebook, Github, Linkedin, Mail } from "lucide-react";
+import { content } from "@/lib/content";
+import type { SocialLink } from "@/lib/content";
+import type { Locale } from "@/lib/i18n";
+import {
+  LOGO_DOT_COLOR,
+  LOGO_DOT_PATH,
+  LOGO_PATH,
+  LOGO_VIEWBOX,
+} from "@/lib/logo";
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear()
+const socialIcons = {
+  github: Github,
+  linkedin: Linkedin,
+  facebook: Facebook,
+  email: Mail,
+} as const;
+
+function ConnectLink({ link }: { link: SocialLink }) {
+  const Icon = socialIcons[link.id];
+  const isExternal = link.href.startsWith("http");
 
   return (
-    <footer className="bg-[#161B22] border-t border-[#30363D] text-white py-12 relative z-10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          {/* About */}
-          <div>
-            <h3 className="font-bold text-lg mb-2">Ahmed Mokhtar</h3>
-            <p className="text-sm text-[#9CA3AF]">
-              Full-Stack Developer | Building modern web applications with MERN Stack & Next.js
+    <a
+      href={link.href}
+      {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      className="group flex items-center gap-3 text-sm text-foreground/70 transition-colors hover:text-rose"
+    >
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg border border-border bg-background/60 text-foreground/70 transition group-hover:border-rose/50 group-hover:text-rose">
+        <Icon size={15} />
+      </span>
+      <span>{link.label}</span>
+    </a>
+  );
+}
+
+export default function Footer({ locale }: { locale: Locale }) {
+  const footerContent = content[locale].footer;
+  const links = footerContent.quickLinkItems;
+  const connectLinks = footerContent.connectItems;
+  const isRtl = locale === "ar";
+
+  const headingClass = `text-xs font-semibold text-rose ${
+    isRtl ? "" : "font-pixel uppercase tracking-[0.2em]"
+  }`;
+
+  return (
+    <footer className="relative mt-20 border-t border-border bg-card/30">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-rose/60 to-transparent" />
+
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr] lg:gap-14">
+          <div className="max-w-sm">
+            <Link
+              href={`/${locale}`}
+              aria-label={footerContent.name}
+              className="inline-flex items-center text-foreground"
+            >
+              <svg
+                className="h-8 w-auto"
+                viewBox={LOGO_VIEWBOX}
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-label={footerContent.name}
+              >
+                <path d={LOGO_PATH} fill="currentColor" />
+                <path d={LOGO_DOT_PATH} fill={LOGO_DOT_COLOR} />
+              </svg>
+            </Link>
+
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              {footerContent.description}
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="font-bold text-lg mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/about" className="text-[#9CA3AF] hover:text-[#00BFFF] transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href="/projects" className="text-[#9CA3AF] hover:text-[#00BFFF] transition-colors">
-                  Projects
-                </Link>
-              </li>
-              <li>
-                <Link href="/skills" className="text-[#9CA3AF] hover:text-[#00BFFF] transition-colors">
-                  Skills
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-[#9CA3AF] hover:text-[#00BFFF] transition-colors">
-                  Contact
-                </Link>
-              </li>
+          <nav aria-label={footerContent.quickLinks}>
+            <h2 className={headingClass}>{footerContent.quickLinks}</h2>
+            <ul className="mt-5 flex flex-col gap-3">
+              {links.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={`/${locale}${link.href}`}
+                    className="group inline-flex items-center gap-2.5 text-sm text-foreground/70 transition-colors hover:text-rose"
+                  >
+                    <span className="h-px w-3 bg-rose/40 transition-all duration-300 group-hover:w-5 group-hover:bg-rose" />
+                    <span>{link.label}</span>
+                  </Link>
+                </li>
+              ))}
             </ul>
-          </div>
+          </nav>
 
-          <div>
-            <h3 className="font-bold text-lg mb-4">Connect</h3>
-            <div className="flex gap-4">
-              <a
-                href="mailto:mo879938@gmail.com"
-                className="text-[#9CA3AF] hover:text-[#00BFFF] hover:scale-110 transition-all"
-                aria-label="Email"
-              >
-                <Mail size={20} />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/ahmed-mokhtar-a23a10372"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#9CA3AF] hover:text-[#00BFFF] hover:scale-110 transition-all"
-                aria-label="LinkedIn"
-              >
-                <Linkedin size={20} />
-              </a>
-              <a
-                href="https://github.com/ahmed404mo"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#9CA3AF] hover:text-[#00BFFF] hover:scale-110 transition-all"
-                aria-label="GitHub"
-              >
-                <Github size={20} />
-              </a>
-              <a
-                href="https://www.facebook.com/share/17cxdv8hxb/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#9CA3AF] hover:text-[#00BFFF] hover:scale-110 transition-all"
-                aria-label="Facebook"
-              >
-                <Facebook size={20} />
-              </a>
-            </div>
-          </div>
+          <nav aria-label={footerContent.connect}>
+            <h2 className={headingClass}>{footerContent.connect}</h2>
+            <ul className="mt-5 flex flex-col gap-3">
+              {connectLinks.map((link) => (
+                <li key={link.id}>
+                  <ConnectLink link={link} />
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
 
-        <div className="border-t border-[#30363D] pt-8 text-center text-sm text-[#9CA3AF]">
-          <p>&copy; {currentYear} Ahmed Mokhtar. All rights reserved. | Crafted with clean code.</p>
+        <div className="mt-12 flex flex-col gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            &copy; 2026 {footerContent.name}. {footerContent.rights}
+          </p>
+          <p className="inline-flex items-center gap-2">
+            <span className="size-1.5 rounded-full bg-rose" />
+            {footerContent.crafted}
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

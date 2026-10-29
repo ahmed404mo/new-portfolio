@@ -1,73 +1,84 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-public/weeks/weekOne/Sequence 01.mp4
-
-# dependencies
+# ==========================================
+# Dependencies
+# ==========================================
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
-/coverage
-
-# next.js
+# ==========================================
+# Next.js Build Outputs & Caches
+# ==========================================
 /.next/
 /out/
-
-# production
 /build
+/dist
+/.turbo
+/.turbopack
+.cache/
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# local env files (أهم حاجة عشان الباسوردات ماتترفعش)
+# ==========================================
+# Environment Variables & Secrets
+# ==========================================
 .env
 .env*.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.pem
 
-# vercel
-.vercel
+# ==========================================
+# Debug & Logs
+# ==========================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
 
-# typescript
+# ==========================================
+# Testing & Code Coverage
+# ==========================================
+/coverage
+*.lcov
+
+# ==========================================
+# TypeScript
+# ==========================================
 *.tsbuildinfo
 next-env.d.ts
 
-# IDE / Editor
+# ==========================================
+# Vercel Deployment
+# ==========================================
+/.vercel
+
+# ==========================================
+# IDE & Code Editors
+# ==========================================
 .idea/
 .vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Heavy Media & Assets
+# ==========================================
+*.mp4
+*.mov
+*.avi
+public/weeks/weekOne/Sequence 01.mp4
