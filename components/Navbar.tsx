@@ -221,7 +221,7 @@ export default function Navbar({ locale }: { locale: Locale }) {
       <aside
         dir="ltr"
         aria-label="Settings panel"
-        className={`fixed left-0 top-1/2 z-50 flex -translate-y-1/2 items-center transition-transform duration-500 ease-out md:hidden ${settingsOpen ? "translate-x-0" : "-translate-x-[90px]"}`}
+        className={`fixed left-0 top-1/2 z-50 flex -translate-y-1/2 items-center transition-transform duration-500 ease-out md:hidden ${settingsOpen ? "translate-x-0" : "-translate-x-[91px]"}`}
       >
         <div
           dir={locale === "ar" ? "rtl" : "ltr"}
